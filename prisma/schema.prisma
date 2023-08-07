@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+
+  files File[]
+}
+
+model File {
+  id         String            @id @default(uuid())
+  url        String
+  sharedWith SharedRecipient[]
+  accessedBy FileAccess[]
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String
+}
+
+model SharedRecipient {
+  id    String @id @default(uuid())
+  email String
+  token String @unique
+
+  file   File   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fileId String
+}
+
+model FileAccess {
+  id    String @id @default(uuid())
+  email String
+
+  file   File   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fileId String
+
+  @@unique([email, fileId])
+}
